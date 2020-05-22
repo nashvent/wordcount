@@ -5,7 +5,6 @@ import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
@@ -15,20 +14,19 @@ import org.apache.hadoop.io.Text;
 public class WordCount {
 
     public static class CustomMap extends Mapper<LongWritable, Text, Text, IntWritable> {
-        private Text word = new Text();
+        private Text wordMap = new Text();
 
-        public void map(LongWritable key, javax.xml.soap.Text value, Context context)
-                throws IOException, InterruptedException {
-            // Limpio caracteres especiales y creo un array
-            String[] stringArray = value.toString().replaceAll("[-+.^:,]", "").split("\\s+");
+        public void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
+            // Limpio caracteres especiales
+            String clean = value.toString().replaceAll("[^\\w\\s]", "");
+            String[] stringArray = clean.split("\\s+");
             for (String str : stringArray) {
-                word.set(str);
-                context.write(word, new IntWritable(1));
+                wordMap.set(str);
+                context.write(wordMap, new IntWritable(1));
             }
         }
     }
 
-    // Reduce function
     public static class CustomReduce extends Reducer<Text, IntWritable, Text, IntWritable> {
         private IntWritable result = new IntWritable();
 
@@ -44,9 +42,7 @@ public class WordCount {
     }
 
     public static void main(String[] args) throws Exception {
-        Configuration conf = new Configuration();
-
-        Job job = Job.getInstance(conf, "WC");
+        Job job = Job.getInstance();
         job.setJarByClass(WordCount.class);
         job.setMapperClass(CustomMap.class);
         job.setReducerClass(CustomReduce.class);

@@ -17,11 +17,11 @@ public class WordCount {
         private Text wordMap = new Text();
 
         public void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
-            // Limpio caracteres especiales
-            String clean = value.toString().replaceAll("[^\\w\\s]", "");
-            String[] stringArray = clean.split("\\s+");
+
+            String clean = value.toString().replaceAll("[^\\w\\s]", ""); // Limpio caracteres especiales
+            String[] stringArray = clean.split("\\s+"); // convierto en array
             for (String str : stringArray) {
-                wordMap.set(str);
+                wordMap.set(str); // agrego a mi clase text de hadoop
                 context.write(wordMap, new IntWritable(1));
             }
         }
@@ -32,24 +32,24 @@ public class WordCount {
 
         public void reduce(Text key, Iterable<IntWritable> values, Context context)
                 throws IOException, InterruptedException {
-            int sum = 0;
+            int sum = 0; // declaro el contador
             for (IntWritable val : values) {
-                sum += val.get();
+                sum += val.get(); // aumento el valor devuelto por otros
             }
-            result.set(sum);
-            context.write(key, result);
+            result.set(sum); // actualizo el valor
+            context.write(key, result); // devuelvo el resultado
         }
     }
 
     public static void main(String[] args) throws Exception {
-        Job job = Job.getInstance();
-        job.setJarByClass(WordCount.class);
-        job.setMapperClass(CustomMap.class);
-        job.setReducerClass(CustomReduce.class);
-        job.setOutputKeyClass(Text.class);
+        Job job = Job.getInstance(); // Instancio la clase job
+        job.setJarByClass(WordCount.class); // Indico la clase principal que se convertira en .jar
+        job.setMapperClass(CustomMap.class); // Selecciono mi mapper
+        job.setReducerClass(CustomReduce.class); // mi reducer
+        job.setOutputKeyClass(Text.class); // El formato del output
         job.setOutputValueClass(IntWritable.class);
-        FileInputFormat.addInputPath(job, new Path(args[0]));
-        FileOutputFormat.setOutputPath(job, new Path(args[1]));
+        FileInputFormat.addInputPath(job, new Path(args[0])); // input
+        FileOutputFormat.setOutputPath(job, new Path(args[1])); // output
         System.exit(job.waitForCompletion(true) ? 0 : 1);
     }
 }
